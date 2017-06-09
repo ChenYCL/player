@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>视频播放器</title>
+    <link rel="stylesheet" href="css/bootstrap.css" type="text/css">
+    <script src="js/jquery.min.js"></script>
+    <!--<script src="js/bootstrap.js"></script>-->
+    <meta name="viewport" content="width=device-width,inital-scale=1.0,maximum=1.0">
+    <style>
+        .img {
+            /*width: 720px;*/
+            /*height: 400px;*/
+            background-color: #272822;
+            margin: 20px 0 0 0;
+        }
+
+        .video-controls {
+            /*width: 720px;*/
+            /*height: 50px;*/
+            background-color: #272822;
+        }
+
+        .h5 {
+            color: white;
+            line-height: inherit;
+            display: inline;
+        }
+
+        input {
+            margin: 15px 0;
+        }
+
+        .glyphicon-fullscreen {
+            margin-top: 15px;
+        }
+
+        .glyphicon-list-alt {
+            margin-top: 15px;
+
+        }
+
+        .img-thumbnail {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .full {
+            width: 1280px;
+            height: 720px;
+
+        }
+
+        .video-controls-toggle {
+            width: 1170px;
+
+        }
+        .medialist{
+            padding: 0;
+            display: none;
+            height: 1000px;
+            background-color: #1C84C6;
+            /*overflow: scroll;*/
+
+        }
+        .list-group{
+            height: 100px;
+
+        }
+        .list-group>.list-group-item{
+            padding: 20px;
+        }
+
+        .test{
+            display: none;
+        }
+        .test1{
+            height: 10px;
+            width: 10px;
+            background-color: #1C84C6;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <video id="vi" class="img img-thumbnail col-md-8 col-xs-12 col-sm-8 col-md-push-2"
+               src="video/HD-Perfect%20Love%20混音版.mp4"></video>
+
+        <div class="video-controls col-md-8 col-xs-12 col-sm-8 col-md-push-2">
+            <div class="row">
+                <!--播放-->
+                <div class="col-md-1 col-xs-1 col-sm-1 btn btn-md play">
+                    <button type="button" class="btn btn-md ">
+                        <a href="#"><span
+                                class=" glyphicon glyphicon-play"></span></a>
+                    </button>
+                </div>
+                <!--时间-->
+                <div class="col-md-2 col-xs-2 col-sm-1 text-center h5 time"><span id="s">00
+                    :00</span>/
+                    <span id="e">00:00</span></div>
+                <!--播放进度-->
+                <div class="col-md-4 col-sm-4 col-xs-4">
+                    <input class="input-md progress-bar" type="range"  max="100"
+                           min="0"
+                           step="0.01">
+                </div>
+                <!--声音-->
+                <div class="col-md-1 col-sm-1 col-xs-1 btn btn-md volumeop">
+                    <button type="button" class="btn btn-md ">
+                        <a href="#"><span
+                                class=" glyphicon glyphicon-volume-up"></span></a>
+                    </button>
+                </div>
+                <!--声音大小-->
+                <div class="col-md-2 col-sm-2 col-xs-2 ">
+                    <input class="input-md volumevalue" type="range" max="100" min="0"
+                           step="1">
+                </div>
+                <!--全屏-->
+                <div class="col-md-1 col-sm-1 col-xs-1 fullscreen">
+                    <a href="#">
+                        <span class="glyphicon glyphicon-fullscreen"></span>
+                    </a>
+                </div>
+                <!--文件-->
+                <div class="col-md-1 col-sm-1 col-xs-1 openfile">
+                    <a href="#">
+                        <span class="glyphicon glyphicon-list-alt"></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!--播放列表-->
+
+
+
+
+       <ul class="medialist col-md-2 col-xl-2 col-lg-2 col-sm-2">
+          <li class="h3 listname">播放列表</li>
+           <li class="listname">1</li>
+           <li class="listname">2</li>
+           <li class="listname">3</li>
+           <li class="listname">4</li>
+           <li class="listname">5</li>
+           <li class="listname">6</li>
+           <li class="listname">7</li>
+           <li class="listname">8</li>
+           <li class="listname">9</li>
+        </ul>
+
+</body>
+<script>
+
+    $(function () {
+        var video = $('video');
+        var play = $('.play');
+        var pause = $('.pause');
+        var time = $('.time');
+        var playprogress = $('.progress-bar');
+        var volumeop = $('.volumeop');
+        var volume_stop = $('a').eq(1).children('span');
+        var volumevalue = $('.volumevalue');
+        var fullscreen = $('.fullscreen');
+        var openfile = $('.openfile');
+        var play_pause = $('a').eq(0).children('span');   //播放的状态值改变 标签
+        var s = $('#s');
+        var e = $('#e');
+        var medialist=$('.medialist');
+
+        /*获取高度*/
+        var positionx=video.offset().left+video.outerWidth();
+        var positiony=video.offset().top;
+        var medialist_height=$('.row').outerHeight();
+        console.info($('.video-controls').height());
+        console.info($('video').height());
+        /*设置播放列表出现的位置*/
+        medialist.css({
+            position:'absolute',
+            left:positionx+'px',
+            top:positiony+'px',
+            height:medialist_height+'px',
+            backgroundColor:'red'
+        });
+
+        /*初始化音量为0.3*/
+        video[0].volume = 0.3;
+        /*音量进度条 同比例设置为30*/
+        volumevalue.val(30);
+        playprogress.val(0);
+        var storefulltime=null;
+        var ctime=0;
+        play.bind("click", function () {
+
+//            alert(document.getElementById('vi').duration);
+
+            /*方式一  通过判断标签是否有 图标类名 进行判断*/
+            /*     if(play_pause.hasClass('glyphicon-play')){
+             video[0].play();
+             play_pause.removeClass('glyphicon-play').addClass('glyphicon-pause');
+             console.info($(this));
+             }
+             else {
+             video[0].pause();
+             play_pause.removeClass('glyphicon-pause').addClass('glyphicon-play');
+             console.info($(this));
+             }*/
+//                play_pause.toggleClass('glyphicon-pause');
+
+            /*取得视频的事件长度并设置显示规则*/
+            setInterval(start,1000);
+            var fulltime = video[0].duration;
+            storefulltime=fulltime;
+            if (fulltime > 3600) {
+                var h = parseInt(fulltime / 3600);
+                e.text(`${h}:${(parseInt(fulltime % 3600) / 60)}:${parseInt((fulltime % 3600) % 60)}`)
+            }
+            if (fulltime < 60) {
+                if (fulltime < 10) {
+                    e.text(`00:0${parseInt(fulltime)}`);
+
+                }
+                else {
+                    e.text(`00:${parseInt(fulltime)}`);
+                }
+            }
+            else {
+                e.text(`${parseInt(fulltime / 60)}:${parseInt(fulltime % 60)}`);
+            }
+
+
+
+            /*或者是用这个判断 通过播放状态进行判断*/
+
+            if (video[0].paused) {
+                video[0].play();
+                video[0].loop=true;
+                play_pause.removeClass('glyphicon-play').addClass('glyphicon-pause');
+
+            }
+
+            else {
+                video[0].pause();
+                play_pause.removeClass('glyphicon-pause').addClass('glyphicon-play');
+
+            }
+        });
+
+
+        /*触发进度条*/
+        /*
+         video[0].addEventListener('progress', function () {
+         console.info(this.currentTime + "进度条");
+         }, true);*/
+
+
+        /*进度条进度改变监听计时器*/
+        function start() {
+
+            ctime=video[0].currentTime;//将时间替换为当前的播放时间
+
+            if (ctime > 3600) {
+                var h = parseInt(ctime / 3600);
+                s.text(`${h}:${(parseInt(ctime % 3600) / 60)}:${parseInt((ctime % 3600) % 60)}`)
+            }
+
+            if (ctime < 60) {
+                if (ctime < 10) {
+                    s.text(`00:${"0"+parseInt(ctime)}`);
+
+                }
+                else {
+                    s.text(`00:${parseInt(ctime)}`);
+                }
+            }
+            else {
+                if(parseInt(ctime%60)<10){
+                    s.text(`${parseInt(ctime / 60)}:${"0"+parseInt(ctime % 60)}`);
+
+                }
+                else {
+                    s.text(`${parseInt(ctime / 60)}:${parseInt(ctime % 60)}`);
+                }
+            }
+            playprogress.val((ctime/storefulltime)*100);
+        };
+
+        /*视频播放进度改变*/
+        playprogress.bind('change',function () {
+            console.info(ctime);
+            var progressch=playprogress.val();
+            ctime=(progressch/100)*storefulltime;
+            video[0].currentTime=ctime;
+
+
+        });
+
+
+        /*音量按钮调节开关*/
+        volumeop.bind('click', function () {
+//            alert(111);
+            if (!video[0].muted) {
+                volume_stop.removeClass('glyphicon-volume-up').addClass('glyphicon-volume-off');
+                video[0].muted = true;
+            }
+            else {
+                video[0].muted = false;
+                volume_stop.removeClass('glyphicon-volume-off').addClass('glyphicon-volume-up');
+            }
+
+        });
+
+        /*音量改变*/
+        volumevalue.bind('change', function () {
+            var volvalue = volumevalue.val();
+            video[0].volume = (volvalue / 100);
+        });
+
+
+
+        fullscreen.bind('click', function () {
+            video.toggleClass('full');
+            $('.video-controls').toggleClass('video-controls-toggle');
+            $('.img').toggleClass('col-md-push-2');
+            $('.video-controls').toggleClass('col-md-push-2');
+            console.info($('.img').width());
+        });
+
+        openfile.bind("click",function () {
+           if($('.medialist').css('display')=='none'){
+          $('.medialist').slideDown(5000);
+
+          }
+           else {
+          $('.medialist').slideDown(5000);
+
+          $('.medialist').css({display:'none'});
+           }
+
+        });
+
+        /*调用ajax*/
+        $.ajax({
+            type: "GET",
+            url: "./json/mediasrc.json",
+            dataType:"json",
+            success: function(data){
+                console.info(data["rows"][0].productname);
+                for(var i=1,j=0;i<data['rows'].length+1;i++,j++){
+                    $('.listname').eq(i).text(data['rows'][j].productname);
+//                    console.info(data['rows'][j].src);
+                    $('.listname').eq(i).data('src',data['rows'][j].src)
+                };
+            }
+        });
+        $('.listname').not($('.listname:first')).bind('click',function () {
+            var src=$(this).data('src');
+            console.info(src);
+            video.attr('src',src);
+
+        });
+
+
+    })
+
+
+</script>
+</html>
